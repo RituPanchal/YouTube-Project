@@ -1,67 +1,63 @@
 import React, { Component } from 'react';
-import Search from './search.component';
-import YouTubeList from './youTubeList.component';
+import Search from './Components/search.component';
 import axios from 'axios';
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
-// import YoutubePlayer from './youTubeVideoPlayer.component';
+import YouTubeList from './Components/youtubeList.component';
+import SelectedVideo from './Components/selectedVideo.component';
 
 class App extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
     this.state = {
-      searchEvent: " ",
-      YouTubeList: [],
-      video_id : ""
+      searchField: "",
+      searchedListItems: [],
+      playThisVideo: ""
     }
-  };
-  
-  searchSomething = async (e) => {
+  }
+
+  onSubmit = async (e) => {
     e.preventDefault();
-    let item = await axios.get(`https://www.googleapis.com/youtube/v3/search?key=AIzaSyD9vUbvaS6iBXVlYpSi70dWEs-W8k7hlbk`,
+
+    let item = await axios.get('https://www.googleapis.com/youtube/v3/search?key=AIzaSyAm-RjFwmAcV4ji4-vT-kSa9xI2pbjp_Rw',
       {
         params: {
           part: "snippet",
-          maxResults: 10,
-          q: this.state.searchEvent,
-          pageToken: "AIzaSyD9vUbvaS6iBXVlYpSi70dWEs-W8k7hlbk"
-        } //params
-      } //second parameter
-    ); //item
+          maxResults: 5,
+          q: this.state.searchField
+        }
+      });
     console.log(item);
-    this.setState({ YouTubeList: item.data.items });
-  } //searchSomething
+    this.setState({ searchedListItems: item.data.items });
+  }
 
-  playVideo = (listItems) => {
-     console.log("list", listItems);
-    this.setState({ video_id : listItems.id.videoId });
-  };
-
+  playVideo = (eachItem) => {
+    console.log("eachItem", eachItem);
+    this.setState({ playThisVideo: eachItem });
+  }
 
   render() {
-    console.log(this.state.searchEvent);
-
+    console.log(this.state.searchField);
     return (
       <div className="container">
-          <form onSubmit = {this.searchSomething}>
-            <Search placeholder = "Search"
-              searchEvent = {e => this.setState({ searchEvent: e.target.value })}
-            />
-        </form>
-
         <div className="row">
-          <YouTubeList list={this.state.YouTubeList} playVideo_prop_list={this.playVideo}/>
+          <div className="col-md-12">
+            <form onSubmit={this.onSubmit}>    
+              <Search userInput={(e) => { this.setState({searchField : e.target.value}) }}/>
+            </form>
+          </div>
         </div>
-
         <div className="row">
-          <iframe width="560" height="315" src="https://www.youtube.com/embed/2V1shb3Mi4s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-          {/* <YoutubePlayer video_id={this.state.video_id}/> */}
+          <div className="col-md-6">
+            <SelectedVideo videoPlayed={this.state.playThisVideo} />
+          </div>
+          <div className="col-md-6">
+            <YouTubeList searchedListItems={this.state.searchedListItems} playVideo={this.playVideo}/>
+          </div>
+          
         </div>
       </div>
-
-    );//return
-    
-  }; //render
-} //class App
+    );
+  }
+}
 
 export default App;
